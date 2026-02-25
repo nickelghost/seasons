@@ -1,6 +1,7 @@
 package seasons_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -45,12 +46,16 @@ func TestGetMeteorological(t *testing.T) {
 
 	for _, d := range meteorologicalTestData {
 		if d.hemisphere == seasons.NorthernHemisphere {
-			date := time.Date(1950, d.month, 23, 13, 8, 5, 3, time.UTC)
-			result := seasons.GetMeteorological(date)
+			t.Run(d.month.String(), func(t *testing.T) {
+				t.Parallel()
 
-			if result != d.season {
-				t.Errorf("%d produced season %d instead of %d", d.month, result, d.season)
-			}
+				date := time.Date(1950, d.month, 23, 13, 8, 5, 3, time.UTC)
+				result := seasons.GetMeteorological(date)
+
+				if result != d.season {
+					t.Errorf("%d produced season %d instead of %d", d.month, result, d.season)
+				}
+			})
 		}
 	}
 }
@@ -59,11 +64,20 @@ func TestGetMeteorologicalForHemisphere(t *testing.T) {
 	t.Parallel()
 
 	for _, d := range meteorologicalTestData {
-		date := time.Date(1950, d.month, 23, 13, 8, 5, 3, time.UTC)
-		result := seasons.GetMeteorologicalForHemisphere(date, d.hemisphere)
-
-		if result != d.season {
-			t.Errorf("%d produced season %d instead of %d", d.month, result, d.season)
+		hemisphereStr := "Northern"
+		if d.hemisphere == seasons.SouthernHemisphere {
+			hemisphereStr = "Southern"
 		}
+
+		t.Run(fmt.Sprintf("%s/%s", hemisphereStr, d.month), func(t *testing.T) {
+			t.Parallel()
+
+			date := time.Date(1950, d.month, 23, 13, 8, 5, 3, time.UTC)
+			result := seasons.GetMeteorologicalForHemisphere(date, d.hemisphere)
+
+			if result != d.season {
+				t.Errorf("%d produced season %d instead of %d", d.month, result, d.season)
+			}
+		})
 	}
 }
